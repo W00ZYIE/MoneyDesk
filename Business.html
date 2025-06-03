@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyDesk</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f4f6f8;
+    color: #2e2e2e;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 414px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    box-shadow: 0 0 12px rgba(0,0,0,0.05);
+}
+
+.header {
+    background: linear-gradient(135deg, #1e88e5 0%, #42a5f5 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header h1 {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.nav-tabs {
+    display: flex;
+    background: #e9ecef;
+    border-bottom: 1px solid #d1d9e0;
+}
+
+.nav-tab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c757d;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.nav-tab.active {
+    background: #ffffff;
+    color: #1e88e5;
+    border-bottom: 2px solid #1e88e5;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #37474f;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid #ccd3da;
+    border-radius: 8px;
+    font-size: 15px;
+    background: #fafafa;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #1e88e5;
+    background: #fff;
+}
+
+.btn {
+    background: #1e88e5;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease, box-shadow 0.2s ease;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.btn:hover {
+    background: #1565c0;
+    box-shadow: 0 4px 10px rgba(30, 136, 229, 0.2);
+}
+
+.btn-danger {
+    background: #e53935;
+}
+
+.btn-success {
+    background: #43a047;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.04);
+    border: 1px solid #e3e6e8;
+}
+
+.card-header {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.card-actions button {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-new { background: #e3f2fd; color: #1e88e5; }
+.status-quoted { background: #fff3e0; color: #fb8c00; }
+.status-won { background: #e8f5e9; color: #43a047; }
+.status-lost { background: #ffebee; color: #e53935; }
+.status-scheduled { background: #ede7f6; color: #7e57c2; }
+.status-progress { background: #fffde7; color: #fbc02d; }
+.status-completed { background: #e8f5e9; color: #388e3c; }
+.status-paid { background: #e1f5fe; color: #0288d1; }
+
+.metric-card {
+    background: linear-gradient(135deg, #3949ab 0%, #5c6bc0 100%);
+    color: white;
+    text-align: center;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.metric-value {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.metric-label {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.no-data {
+    text-align: center;
+    color: #6c757d;
+    padding: 40px 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+
+.filter-section {
+    background: #f1f3f5;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MoneyDesk</h1>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('clients')">👥 Clients</button>
+            <button class="nav-tab" onclick="showTab('jobs')">🔧 Jobs</button>
+            <button class="nav-tab" onclick="showTab('analytics')">📈 Analytics</button>
+        </div>
+
+        <!-- CLIENTS TAB -->
+        <div id="clients" class="tab-content active">
+            <div class="card">
+                <div class="card-header">Add New Client</div>
+                <form id="clientForm">
+                    <div class="form-group">
+                        <label>Client Name *</label>
+                        <input type="text" id="clientName" class="form-control" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" id="clientPhone" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="clientEmail" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="clientAddress" class="form-control">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Source</label>
+                            <select id="clientSource" class="form-control">
+                                <option value="">Select Source</option>
+                                <option value="Nextdoor">Nextdoor</option>
+                                <option value="Referral">Referral</option>
+                                <option value="Social Media">Social Media</option>
+                                <option value="Website">Website</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="clientStatus" class="form-control">
+                                <option value="New">New</option>
+                                <option value="Quoted">Quoted</option>
+                                <option value="Won">Won</option>
+                                <option value="Lost">Lost</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Contacted Date</label>
+                        <input type="date" id="clientDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="clientNotes" class="form-control" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn">Add Client</button>
+                </form>
+            </div>
+
+            <div id="clientsList"></div>
+        </div>
+
+        <!-- JOBS TAB -->
+        <div id="jobs" class="tab-content">
+            <div class="card">
+                <div class="card-header">Add New Job</div>
+                <form id="jobForm">
+                    <div class="form-group">
+                        <label>Select Client *</label>
+                        <select id="jobClient" class="form-control" required>
+                            <option value="">Choose a client</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Job *</label>
+                        <input type="date" id="jobDate" class="form-control" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Start Time</label>
+                            <input type="time" id="jobStartTime" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>End Time</label>
+                            <input type="time" id="jobEndTime" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Quoted Amount ($)</label>
+                            <input type="number" id="jobQuoted" class="form-control" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Final Amount ($) *</label>
+                            <input type="number" id="jobFinal" class="form-control" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Materials/Costs ($)</label>
+                        <input type="number" id="jobCosts" class="form-control" step="0.01" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Services Provided</label>
+                        <textarea id="jobServices" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Job Status</label>
+                        <select id="jobStatus" class="form-control">
+                            <option value="Scheduled">Scheduled</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Paid">Paid</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Add Job</button>
+                </form>
+            </div>
+
+            <div id="jobsList"></div>
+        </div>
+
+        <!-- ANALYTICS TAB -->
+        <div id="analytics" class="tab-content">
+            <div class="filter-section">
+                <div class="filter-row">
+                    <div class="form-group">
+                        <label>From Date</label>
+                        <input type="date" id="filterFromDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>To Date</label>
+                        <input type="date" id="filterToDate" class="form-control">
+                    </div>
+                </div>
+                <button onclick="updateAnalytics()" class="btn">Update Analytics</button>
+            </div>
+
+            <div id="analyticsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage (In-Memory - Replace with localStorage in your environment)
+        let clients = [];
+        let jobs = [];
+        let editingClientId = null;
+        let editingJobId = null;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSampleData();
+            updateClientDropdown();
+            renderClients();
+            renderJobs();
+            updateAnalytics();
+            
+            // Set default date to today
+            document.getElementById('clientDate').valueAsDate = new Date();
+            document.getElementById('jobDate').valueAsDate = new Date();
+        });
+
+        // Tab Management
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Update analytics when switching to analytics tab
+            if (tabName === 'analytics') {
+                updateAnalytics();
+            }
+        }
+
+        // Client Management
+        document.getElementById('clientForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const clientData = {
+                id: editingClientId || Date.now(),
+                name: document.getElementById('clientName').value,
+                phone: document.getElementById('clientPhone').value,
+                email: document.getElementById('clientEmail').value,
+                address: document.getElementById('clientAddress').value,
+                source: document.getElementById('clientSource').value,
+                status: document.getElementById('clientStatus').value,
+                contactedDate: document.getElementById('clientDate').value,
+                notes: document.getElementById('clientNotes').value,
+                createdAt: editingClientId ? clients.find(c => c.id === editingClientId).createdAt : new Date().toISOString()
+            };
+
+            if (editingClientId) {
+                const index = clients.findIndex(c => c.id === editingClientId);
+                clients[index] = clientData;
+                editingClientId = null;
+            } else {
+                clients.push(clientData);
+            }
+
+            this.reset();
+            document.getElementById('clientDate').valueAsDate = new Date();
+            renderClients();
+            updateClientDropdown();
+        });
+
+        function renderClients() {
+            const container = document.getElementById('clientsList');
+            
+            if (clients.length === 0) {
+                container.innerHTML = '<div class="no-data">No clients added yet. Add your first client above!</div>';
+                return;
+            }
+
+            container.innerHTML = clients.map(client => `
+                <div class="card">
+                    <div class="card-header">
+                        <strong>${client.name}</strong>
+                        <span class="status-badge status-${client.status.toLowerCase()}">${client.status}</span>
+                    </div>
+                    <div style="font-size: 14px; color: #6c757d; line-height: 1.5;">
+                        ${client.phone ? `📞 ${client.phone}<br>` : ''}
+                        ${client.email ? `📧 ${client.email}<br>` : ''}
+                        ${client.address ? `📍 ${client.address}<br>` : ''}
+                        ${client.source ? `📢 Source: ${client.source}<br>` : ''}
+                        ${client.contactedDate ? `📅 Contacted: ${formatDate(client.contactedDate)}<br>` : ''}
+                        ${client.notes ? `📝 ${client.notes}` : ''}
+                    </div>
+                    <div class="card-actions">
+                        <button onclick="editClient(${client.id})" class="btn btn-success">Edit</button>
+                        <button onclick="deleteClient(${client.id})" class="btn btn-danger">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function editClient(id) {
+            const client = clients.find(c => c.id === id);
+            if (!client) return;
+
+            editingClientId = id;
+            document.getElementById('clientName').value = client.name;
+            document.getElementById('clientPhone').value = client.phone || '';
+            document.getElementById('clientEmail').value = client.email || '';
+            document.getElementById('clientAddress').value = client.address || '';
+            document.getElementById('clientSource').value = client.source || '';
+            document.getElementById('clientStatus').value = client.status;
+            document.getElementById('clientDate').value = client.contactedDate || '';
+            document.getElementById('clientNotes').value = client.notes || '';
+        }
+
+        function deleteClient(id) {
+            if (confirm('Are you sure you want to delete this client?')) {
+                clients = clients.filter(c => c.id !== id);
+                renderClients();
+                updateClientDropdown();
+            }
+        }
+
+        function updateClientDropdown() {
+            const dropdown = document.getElementById('jobClient');
+            dropdown.innerHTML = '<option value="">Choose a client</option>' + 
+                clients.map(client => `<option value="${client.id}">${client.name}</option>`).join('');
+        }
+
+        // Job Management
+        document.getElementById('jobForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const startTime = document.getElementById('jobStartTime').value;
+            const endTime = document.getElementById('jobEndTime').value;
+            const finalAmount = parseFloat(document.getElementById('jobFinal').value) || 0;
+            const costs = parseFloat(document.getElementById('jobCosts').value) || 0;
+            
+            const jobData = {
+                id: editingJobId || Date.now(),
+                clientId: parseInt(document.getElementById('jobClient').value),
+                date: document.getElementById('jobDate').value,
+                startTime,
+                endTime,
+                quotedAmount: parseFloat(document.getElementById('jobQuoted').value) || 0,
+                finalAmount,
+                costs,
+                services: document.getElementById('jobServices').value,
+                status: document.getElementById('jobStatus').value,
+                totalTime: calculateTotalTime(startTime, endTime),
+                netProfit: finalAmount - costs,
+                hourlyRevenue: calculateHourlyRevenue(finalAmount, costs, startTime, endTime),
+                createdAt: editingJobId ? jobs.find(j => j.id === editingJobId).createdAt : new Date().toISOString()
+            };
+
+            if (editingJobId) {
+                const index = jobs.findIndex(j => j.id === editingJobId);
+                jobs[index] = jobData;
+                editingJobId = null;
+            } else {
+                jobs.push(jobData);
+            }
+
+            this.reset();
+            document.getElementById('jobDate').valueAsDate = new Date();
+            document.getElementById('jobCosts').value = '0';
+            renderJobs();
+        });
+
+        function renderJobs() {
+            const container = document.getElementById('jobsList');
+            
+            if (jobs.length === 0) {
+                container.innerHTML = '<div class="no-data">No jobs added yet. Add your first job above!</div>';
+                return;
+            }
+
+            container.innerHTML = jobs.map(job => {
+                const client = clients.find(c => c.id === job.clientId);
+                return `
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>${client ? client.name : 'Unknown Client'}</strong>
+                            <span class="status-badge status-${job.status.toLowerCase().replace(' ', '')}">${job.status}</span>
+                        </div>
+                        <div style="font-size: 14px; color: #6c757d; line-height: 1.5;">
+                            📅 ${formatDate(job.date)}<br>
+                            ${job.startTime && job.endTime ? `⏰ ${job.startTime} - ${job.endTime} (${job.totalTime})<br>` : ''}
+                            💰 Final: $${job.finalAmount.toFixed(2)} | Costs: $${job.costs.toFixed(2)}<br>
+                            💎 Net Profit: $${job.netProfit.toFixed(2)}<br>
+                            ${job.hourlyRevenue > 0 ? `⏱️ Hourly: $${job.hourlyRevenue.toFixed(2)}/hr<br>` : ''}
+                            ${job.services ? `🔧 ${job.services}` : ''}
+                        </div>
+                        <div class="card-actions">
+                            <button onclick="editJob(${job.id})" class="btn btn-success">Edit</button>
+                            <button onclick="deleteJob(${job.id})" class="btn btn-danger">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function editJob(id) {
+            const job = jobs.find(j => j.id === id);
+            if (!job) return;
+
+            editingJobId = id;
+            document.getElementById('jobClient').value = job.clientId;
+            document.getElementById('jobDate').value = job.date;
+            document.getElementById('jobStartTime').value = job.startTime || '';
+            document.getElementById('jobEndTime').value = job.endTime || '';
+            document.getElementById('jobQuoted').value = job.quotedAmount || '';
+            document.getElementById('jobFinal').value = job.finalAmount;
+            document.getElementById('jobCosts').value = job.costs;
+            document.getElementById('jobServices').value = job.services || '';
+            document.getElementById('jobStatus').value = job.status;
+        }
+
+        function deleteJob(id) {
+            if (confirm('Are you sure you want to delete this job?')) {
+                jobs = jobs.filter(j => j.id !== id);
+                renderJobs();
+            }
+        }
+
+        // Utility Functions
+        function calculateTotalTime(startTime, endTime) {
+            if (!startTime || !endTime) return '';
+            
+            const start = new Date(`2000-01-01T${startTime}`);
+            const end = new Date(`2000-01-01T${endTime}`);
+            const diff = end - start;
+            
+            if (diff <= 0) return '';
+            
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            return `${hours}h ${minutes}m`;
+        }
+
+        function calculateHourlyRevenue(finalAmount, costs, startTime, endTime) {
+            if (!startTime || !endTime) return 0;
+            
+            const start = new Date(`2000-01-01T${startTime}`);
+            const end = new Date(`2000-01-01T${endTime}`);
+            const hours = (end - start) / (1000 * 60 * 60);
+            
+            if (hours <= 0) return 0;
+            
+            return (finalAmount - costs) / hours;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            return new Date(dateString).toLocaleDateString();
+        }
+
+        // Analytics
+        function updateAnalytics() {
+            const fromDate = document.getElementById('filterFromDate').value;
+            const toDate = document.getElementById('filterToDate').value;
+            
+            let filteredJobs = jobs;
+            
+            if (fromDate || toDate) {
+                filteredJobs = jobs.filter(job => {
+                    const jobDate = new Date(job.date);
+                    if (fromDate && jobDate < new Date(fromDate)) return false;
+                    if (toDate && jobDate > new Date(toDate)) return false;
+                    return true;
+                });
+            }
+
+            const analytics = calculateAnalytics(filteredJobs);
+            renderAnalytics(analytics);
+        }
+
+        function calculateAnalytics(jobsData) {
+            const totalRevenue = jobsData.reduce((sum, job) => sum + job.finalAmount, 0);
+            const totalCosts = jobsData.reduce((sum, job) => sum + job.costs, 0);
+            const totalProfit = totalRevenue - totalCosts;
+            const totalJobs = jobsData.length;
+            
+            // Job status counts
+            const statusCounts = jobsData.reduce((acc, job) => {
+                acc[job.status] = (acc[job.status] || 0) + 1;
+                return acc;
+            }, {});
+
+            // Calculate total hours
+            const totalHours = jobsData.reduce((sum, job) => {
+                if (!job.startTime || !job.endTime) return sum;
+                const start = new Date(`2000-01-01T${job.startTime}`);
+                const end = new Date(`2000-01-01T${job.endTime}`);
+                return sum + (end - start) / (1000 * 60 * 60);
+            }, 0);
+
+            // Closing rate
+            const clientsWithJobs = new Set(jobsData.map(job => job.clientId));
+            const closingRate = clients.length > 0 ? (clientsWithJobs.size / clients.length) * 100 : 0;
+
+            return {
+                totalRevenue,
+                totalJobs,
+                totalProfit,
+                profitMargin: totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0,
+                avgRevenuePerHour: totalHours > 0 ? totalProfit / totalHours : 0,
+                avgJobTime: totalJobs > 0 ? totalHours / totalJobs : 0,
+                closingRate,
+                myShare: totalProfit * 0.5,
+                statusCounts
+            };
+        }
+
+        function renderAnalytics(analytics) {
+            const container = document.getElementById('analyticsContent');
+            
+            container.innerHTML = `
+                <div class="grid-2">
+                    <div class="metric-card">
+                        <div class="metric-value">$${analytics.totalRevenue.toFixed(0)}</div>
+                        <div class="metric-label">Total Revenue</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${analytics.totalJobs}</div>
+                        <div class="metric-label">Total Jobs</div>
+                    </div>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="metric-card">
+                        <div class="metric-value">$${analytics.totalProfit.toFixed(0)}</div>
+                        <div class="metric-label">Net Profit</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${analytics.profitMargin.toFixed(1)}%</div>
+                        <div class="metric-label">Profit Margin</div>
+                    </div>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="metric-card">
+                        <div class="metric-value">$${analytics.avgRevenuePerHour.toFixed(0)}</div>
+                        <div class="metric-label">Avg Revenue/Hour</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${analytics.closingRate.toFixed(1)}%</div>
+                        <div class="metric-label">Closing Rate</div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value">$${analytics.myShare.toFixed(0)}</div>
+                    <div class="metric-label">My Share (50%)</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Jobs by Status</div>
+                    ${Object.entries(analytics.statusCounts).map(([status, count]) => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
+                            <span class="status-badge status-${status.toLowerCase().replace(' ', '')}">${status}</span>
+                            <strong>${count}</strong>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Load sample data for demo
+        function loadSampleData() {
+            clients = [
+                {
+                    id: 1,
+                    name: "John Smith",
+                    phone: "(555) 123-4567",
+                    email: "john@example.com",
+                    address: "123 Main St, Anytown",
+                    source: "Google",
+                    status: "Won",
+                    contactedDate: "2024-01-15",
+                    notes: "Referred by previous customer",
+                    createdAt: "2024-01-15T10:00:00Z"
+                },
+                {
+                    id: 2,
+                    name: "Sarah Johnson",
+                    phone: "(555) 987-6543",
+                    email: "sarah@example.com",
+                    address: "456 Oak Ave, Somewhere",
+                    source: "Referral",
+                    status: "Quoted",
+                    contactedDate: "2024-01-20",
+                    notes: "Kitchen renovation project",
+                    createdAt: "2024-01-20T14:30:00Z"
+                },
+                {
+                    id: 3,
+                    name: "Mike Davis",
+                    phone: "(555) 555-0123",
+                    email: "mike@example.com",
+                    address: "789 Pine St, Elsewhere",
+                    source: "Website",
+                    status: "New",
+                    contactedDate: "2024-01-25",
+                    notes: "Bathroom remodel inquiry",
+                    createdAt: "2024-01-25T09:15:00Z"
+                }
+            ];
+
+            jobs = [
+                {
+                    id: 1,
+                    clientId: 1,
+                    date: "2024-01-18",
+                    startTime: "09:00",
+                    endTime: "17:00",
+                    quotedAmount: 2500,
+                    finalAmount: 2800,
+                    costs: 800,
+                    services: "Kitchen cabinet installation and painting",
+                    status: "Completed",
+                    totalTime: "8h 0m",
+                    netProfit: 2000,
+                    hourlyRevenue: 250,
+                    createdAt: "2024-01-18T09:00:00Z"
+                },
+                {
+                    id: 2,
+                    clientId: 1,
+                    date: "2024-01-22",
+                    startTime: "10:00",
+                    endTime: "15:00",
+                    quotedAmount: 1200,
+                    finalAmount: 1350,
+                    costs: 300,
+                    services: "Bathroom tile work",
+                    status: "Paid",
+                    totalTime: "5h 0m",
+                    netProfit: 1050,
+                    hourlyRevenue: 210,
+                    createdAt: "2024-01-22T10:00:00Z"
+                },
+                {
+                    id: 3,
+                    clientId: 2,
+                    date: "2024-01-28",
+                    startTime: "08:30",
+                    endTime: "16:30",
+                    quotedAmount: 3000,
+                    finalAmount: 3200,
+                    costs: 1200,
+                    services: "Full kitchen renovation - cabinets, countertops, flooring",
+                    status: "In Progress",
+                    totalTime: "8h 0m",
+                    netProfit: 2000,
+                    hourlyRevenue: 250,
+                    createdAt: "2024-01-28T08:30:00Z"
+                }
+            ];
+        }
+
+        // Export/Import functions for localStorage migration
+        function exportData() {
+            const data = {
+                clients: clients,
+                jobs: jobs,
+                exportDate: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'business-tracker-data.json';
+            link.click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.clients && data.jobs) {
+                        clients = data.clients;
+                        jobs = data.jobs;
+                        renderClients();
+                        renderJobs();
+                        updateClientDropdown();
+                        updateAnalytics();
+                        alert('Data imported successfully!');
+                    } else {
+                        alert('Invalid data format');
+                    }
+                } catch (error) {
+                    alert('Error importing data: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // PWA Setup Functions (for future use)
+        function setupPWA() {
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW registered'))
+                    .catch(err => console.log('SW registration failed'));
+            }
+        }
+
+        // Add keyboard shortcuts for power users
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case '1':
+                        e.preventDefault();
+                        showTab('clients');
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        showTab('jobs');
+                        break;
+                    case '3':
+                        e.preventDefault();
+                        showTab('analytics');
+                        break;
+                }
+            }
+        });
+
+        // Touch gestures for mobile navigation
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleGesture();
+        });
+
+        function handleGesture() {
+            const threshold = 100;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > threshold) {
+                const activeTab = document.querySelector('.nav-tab.active');
+                const tabs = ['clients', 'jobs', 'analytics'];
+                const currentIndex = tabs.indexOf(activeTab.onclick.toString().match(/showTab\('(.+?)'\)/)[1]);
+                
+                if (diff > 0 && currentIndex < tabs.length - 1) {
+                    // Swipe left - next tab
+                    showTab(tabs[currentIndex + 1]);
+                } else if (diff < 0 && currentIndex > 0) {
+                    // Swipe right - previous tab
+                    showTab(tabs[currentIndex - 1]);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
